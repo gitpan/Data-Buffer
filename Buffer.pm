@@ -1,15 +1,23 @@
-# $Id: Buffer.pm,v 1.6 2001/05/03 01:21:23 btrott Exp $
+# $Id: Buffer.pm,v 1.8 2001/07/21 05:33:00 btrott Exp $
 
 package Data::Buffer;
 use strict;
 
 use vars qw( $VERSION );
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 sub new {
     my $class = shift;
     my %arg = @_;
     bless { buf => "", offset => 0, template => "" }, $class;
+}
+
+sub extract {
+    my $buf = shift;
+    my($nbytes) = @_;
+    my $new = ref($buf)->new;
+    $new->append( $buf->get_bytes($nbytes) );
+    $new;
 }
 
 sub empty {
@@ -48,13 +56,14 @@ sub dump {
     my @r;
     for my $c (split //, $buf->bytes(@_)) {
         push @r, sprintf "%02x", ord $c;
+        push @r, "\n" unless @r % 24;
     }
     join ' ', @r
 }
 
 sub get_all {
     my $buf = shift;
-    my($tmpl, $data) = $buf->{buf} =~ /^([NYacn\d]+)\0(.+)$/s or
+    my($tmpl, $data) = $buf->{buf} =~ /^([NYaCn\d]+)\0(.+)$/s or
         die "Buffer $buf does not appear to contain a template";
     my $b = __PACKAGE__->new;
     $b->append($data);
@@ -69,7 +78,7 @@ sub get_all {
         elsif ($el eq "n") {
             push @data, $b->get_int16;
         }
-        elsif ($el eq "c") {
+        elsif ($el eq "C") {
             push @data, $b->get_int8;
         }
         elsif ($el eq "a") {
@@ -90,13 +99,13 @@ sub get_int8 {
     my $buf = shift;
     my $off = defined $_[0] ? shift : $buf->{offset};
     $buf->{offset} += 1;
-    unpack "c", $buf->bytes($off, 1);
+    unpack "C", $buf->bytes($off, 1);
 }
 
 sub put_int8 {
     my $buf = shift;
-    $buf->{buf} .= pack "c", $_[0];
-    $buf->{template} .= "c";
+    $buf->{buf} .= pack "C", $_[0];
+    $buf->{template} .= "C";
 }
 
 sub get_int16 {
@@ -137,6 +146,22 @@ sub put_char {
     $buf->{buf} .= $_[0];
     $buf->{template} .= "a" . CORE::length($_[0]);
 }
+
+sub get_bytes {
+    my $buf = shift;
+    my($nbytes) = @_;
+    my $d = $buf->bytes($buf->{offset}, $nbytes);
+    $buf->{offset} += $nbytes;
+    $d;
+}
+
+sub put_bytes {
+    my $buf = shift;
+    my($str, $nbytes) = @_;
+    $buf->{buf} .= $nbytes ? substr($str, 0, $nbytes) : $str;
+    $buf->{template} .= "a" . ($nbytes ? $nbytes : CORE::length($str));
+}
+
 *put_chars = \&put_char;
 
 sub get_str {

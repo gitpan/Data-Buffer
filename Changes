@@ -1,6 +1,16 @@
-$Id: Changes,v 1.4 2001/05/03 01:13:50 btrott Exp $
+$Id: Changes,v 1.5 2001/07/21 05:32:42 btrott Exp $
 
 Revision history for Data::Buffer
+
+0.03  2001.07.13
+    - Fixed bug in get_int8 and put_int8; was using signed char ('c'),
+      should have been using unsigned char ('C').
+    - Added get_bytes and put_bytes; the first grabs a number of bytes
+      from the buffer and returns them, the latter appends bytes into
+      the buffer.
+    - Added extract, which grabs a piece of the buffer and returns a
+      new buffer containing that chunk, updating the offset in the
+      original buffer.
 
 0.02  2001.05.02
     - Fixed number of tests in test suite.
