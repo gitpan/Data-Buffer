@@ -1,9 +1,9 @@
-# $Id: test.pl,v 1.6 2001/07/21 05:32:42 btrott Exp $
+# $Id: test.pl,v 1.7 2001/07/28 06:36:50 btrott Exp $
 
 use strict;
 
 use Test;
-BEGIN { plan tests => 45 }
+BEGIN { plan tests => 55 }
 
 use vars qw( $loaded );
 END { print "not ok 1\n" unless $loaded; }
@@ -44,7 +44,8 @@ $buffer->put_bytes("foobar", 5);
 ok($buffer->get_bytes(5), "fooba");
 ok($buffer->offset == $buffer->length);
 
-$buffer->{offset} = $save_off;
+$buffer->set_offset($save_off);
+ok($buffer->offset, $save_off);
 my $buf2 = $buffer->extract(5);
 ok($buf2->offset, 0);
 ok($buf2->length, 5);
@@ -87,3 +88,18 @@ $buffer->put_int16(129);
 ok($buffer->get_int16, 129);
 ok($buffer->dump, '00 81');
 ok($buffer->dump(1), '81');
+
+$buf2 = Data::Buffer->new_with_init("foo");
+ok($buf2);
+ok($buf2->length, 3);
+ok($buf2->bytes, "foo");
+
+$buf2 = Data::Buffer->new_with_init("foo", "bar");
+ok($buf2);
+ok($buf2->length, 6);
+ok($buf2->bytes, "foobar");
+
+ok($buf2->get_bytes(3), "foo");
+$buf2->reset_offset;
+ok($buf2->offset, 0);
+ok($buf2->length, 6);

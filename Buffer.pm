@@ -1,15 +1,22 @@
-# $Id: Buffer.pm,v 1.8 2001/07/21 05:33:00 btrott Exp $
+# $Id: Buffer.pm,v 1.9 2001/07/28 06:36:50 btrott Exp $
 
 package Data::Buffer;
 use strict;
 
 use vars qw( $VERSION );
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 sub new {
     my $class = shift;
     my %arg = @_;
     bless { buf => "", offset => 0, template => "" }, $class;
+}
+
+sub new_with_init {
+    my $class = shift;
+    my $buf = $class->new;
+    $buf->append($_) for @_;
+    $buf;
 }
 
 sub extract {
@@ -26,6 +33,9 @@ sub empty {
     $buf->{offset} = 0;
     $buf->{template} = "";
 }
+
+sub set_offset { $_[0]->{offset} = $_[1] }
+sub reset_offset { $_[0]->set_offset(0) }
 
 sub insert_template {
     my $buf = shift;
@@ -235,6 +245,13 @@ initially empty.
 
 This method takes no arguments.
 
+=head2 Data::Buffer->new_with_init(@strs)
+
+Creates a new buffer object and appends to it each of the
+octet strings in I<@strs>.
+
+Returns the new buffer object.
+
 =head2 $buffer->get_int8
 
 Returns the next 8-bit integer from the buffer (which
@@ -276,6 +293,17 @@ string I<$bytes>; if it makes you uncomfortable to call
 I<put_char> to put multiple bytes, you can instead
 call this method as I<put_chars>. It's the same thing.
 
+=head2 $buffer->get_bytes($n)
+
+Grabs I<$n> bytes from the buffer, where I<$n> is a positive
+integer. Increments the internal offset state by I<$n>.
+
+=head2 $buffer->put_bytes($bytes [, $n ])
+
+Appends a sequence of bytes to the buffer; if I<$n> is
+unspecified, appends the entire length of I<$bytes>.
+Otherwise appends only the first I<$n> bytes of I<$bytes>.
+
 =head2 $buffer->get_str
 
 Returns the next "string" from the buffer. A string here
@@ -286,6 +314,12 @@ integer) followed by the string itself.
 
 Appends a string (32-bit integer length and the string
 itself) to the buffer.
+
+=head2 $buffer->extract($n)
+
+Extracts the next I<$n> bytes from the buffer I<$buffer>,
+increments the offset state in I<$buffer>, and returns a
+new buffer object containing the extracted bytes.
 
 =head1 TEMPLATE USAGE
 
@@ -392,6 +426,14 @@ If you insist on intermixing calls to I<bytes> with calls
 to the I<get_*> and I<put_*> methods, you'll probably
 want to use this method to get some status on that
 internal offset.
+
+=head2 $buffer->set_offset($offset)
+
+Sets the internal offset state to I<$offset>.
+
+=head2 $buffer->reset_offset
+
+Sets the internal offset state to 0.
 
 =head2 $buffer->dump(@args)
 
