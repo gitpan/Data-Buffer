@@ -1,10 +1,10 @@
-# $Id: Buffer.pm,v 1.5 2001/04/07 09:01:16 btrott Exp $
+# $Id: Buffer.pm,v 1.6 2001/05/03 01:21:23 btrott Exp $
 
 package Data::Buffer;
 use strict;
 
 use vars qw( $VERSION );
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 sub new {
     my $class = shift;

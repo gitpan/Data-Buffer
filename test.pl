@@ -1,9 +1,9 @@
-# $Id: test.pl,v 1.3 2001/03/22 20:23:03 btrott Exp $
+# $Id: test.pl,v 1.5 2001/05/03 01:13:50 btrott Exp $
 
 use strict;
 
 use Test;
-BEGIN { plan tests => 19 }
+BEGIN { plan tests => 33 }
 
 use vars qw( $loaded );
 END { print "not ok 1\n" unless $loaded; }
